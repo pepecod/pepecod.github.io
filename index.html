@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pepe · Dev Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #050a05;
+    --bg2: #0a120a;
+    --green: #39ff14;
+    --green-dim: #1a7a00;
+    --green-glow: rgba(57,255,20,0.15);
+    --text: #c8e6c8;
+    --muted: #4a6b4a;
+    --border: #1a3a1a;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    overflow-x: hidden;
+    cursor: crosshair;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    pointer-events: none; z-index: 9999;
+  }
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.4; pointer-events: none; z-index: 0;
+  }
+  section, nav, footer, .stack-section, .contact-section { position: relative; z-index: 1; }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    padding: 1rem 2rem;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--border);
+    background: rgba(5,10,5,0.9);
+    backdrop-filter: blur(10px);
+    z-index: 100;
+  }
+  .nav-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem; color: var(--green); text-shadow: 0 0 20px var(--green); letter-spacing: 0.05em; }
+  .nav-logo span { color: var(--text); }
+  nav ul { display: flex; gap: 2rem; list-style: none; }
+  nav a { color: var(--muted); text-decoration: none; font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; transition: color 0.2s; }
+  nav a:hover { color: var(--green); }
+  .nav-status { display: flex; align-items: center; gap: 0.5rem; font-size: 0.7rem; color: var(--green); }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: blink 1.5s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  /* HERO */
+  .hero { min-height: 100vh; display: flex; align-items: center; padding: 8rem 4rem 4rem; max-width: 1200px; margin: 0 auto; }
+  .hero-content { max-width: 700px; }
+  .hero-tag { font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--green); margin-bottom: 1.5rem; opacity: 0; animation: fadeUp 0.6s ease forwards 0.3s; }
+  .hero-tag::before { content: '> '; }
+  .hero-name { font-family: 'Syne', sans-serif; font-size: clamp(3.5rem, 8vw, 6.5rem); font-weight: 800; line-height: 0.95; color: #fff; margin-bottom: 1rem; opacity: 0; animation: fadeUp 0.6s ease forwards 0.5s; }
+  .hero-name .accent { color: var(--green); text-shadow: 0 0 40px rgba(57,255,20,0.4); }
+  .hero-subtitle { font-size: 1rem; color: var(--muted); margin-bottom: 2rem; opacity: 0; animation: fadeUp 0.6s ease forwards 0.7s; }
+  .terminal-line { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--text); opacity: 0; animation: fadeUp 0.6s ease forwards 0.9s; }
+  .terminal-prompt { color: var(--green); }
+  .typed-text { border-right: 2px solid var(--green); animation: typing 3s steps(40) 1.2s forwards, cur 0.8s step-end infinite 1.2s; white-space: nowrap; overflow: hidden; width: 0; }
+  @keyframes typing { to { width: 100%; } }
+  @keyframes cur { 0%,100%{border-color:var(--green)} 50%{border-color:transparent} }
+  .hero-cta { display: flex; gap: 1rem; margin-top: 2.5rem; opacity: 0; animation: fadeUp 0.6s ease forwards 1.2s; }
+  .btn { padding: 0.75rem 1.75rem; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none; border: 1px solid var(--green); color: var(--green); background: transparent; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
+  .btn::before { content: ''; position: absolute; inset: 0; background: var(--green); transform: scaleX(0); transform-origin: left; transition: transform 0.2s; z-index: -1; }
+  .btn:hover { color: var(--bg); }
+  .btn:hover::before { transform: scaleX(1); }
+  .btn-ghost { border-color: var(--border); color: var(--muted); }
+  .btn-ghost:hover { color: var(--bg); border-color: var(--green); }
+  .btn-ghost::before { background: var(--green); }
+
+  /* SECTIONS */
+  .section { padding: 6rem 4rem; max-width: 1200px; margin: 0 auto; }
+  .section-label { font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--green); margin-bottom: 0.5rem; }
+  .section-label::before { content: '// '; color: var(--muted); }
+  .section-title { font-family: 'Syne', sans-serif; font-size: clamp(2rem, 4vw, 3.5rem); font-weight: 800; color: #fff; margin-bottom: 3rem; line-height: 1.1; }
+
+  /* ABOUT */
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+  .about-text p { color: var(--text); line-height: 1.9; font-size: 0.9rem; margin-bottom: 1rem; }
+  .about-text p strong { color: var(--green); }
+  .about-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+  .stat { background: var(--bg2); padding: 2rem; transition: background 0.2s; }
+  .stat:hover { background: #0d1a0d; }
+  .stat-number { font-family: 'Syne', sans-serif; font-size: 2.5rem; font-weight: 800; color: var(--green); text-shadow: 0 0 20px rgba(57,255,20,0.3); line-height: 1; margin-bottom: 0.25rem; }
+  .stat-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+
+  /* STACK */
+  .stack-section { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .tech-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1px; background: var(--border); margin-top: 2rem; }
+  .tech-card { background: var(--bg2); padding: 1.5rem; text-align: center; transition: background 0.2s; cursor: default; position: relative; overflow: hidden; }
+  .tech-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--green); transform: scaleX(0); transition: transform 0.2s; }
+  .tech-card:hover { background: #0d1a0d; }
+  .tech-card:hover::after { transform: scaleX(1); }
+  .tech-icon { height: 52px; display: flex; justify-content: center; align-items: center; margin-bottom: 0.75rem; }
+  .tech-icon svg { width: 40px; height: 40px; transition: filter 0.3s; filter: drop-shadow(0 0 4px rgba(57,255,20,0.1)); }
+  .tech-card:hover .tech-icon svg { filter: drop-shadow(0 0 10px rgba(57,255,20,0.5)); }
+  .tech-name { font-size: 0.75rem; color: var(--text); }
+  .tech-level { font-size: 0.65rem; color: var(--muted); margin-top: 0.25rem; }
+
+  /* PROJECTS */
+  .projects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1px; background: var(--border); margin-top: 2rem; }
+  .project-card { background: var(--bg2); padding: 2rem; transition: background 0.2s; position: relative; overflow: hidden; }
+  .project-card::before { content: ''; position: absolute; top: 0; right: 0; width: 60px; height: 60px; background: linear-gradient(135deg, transparent 50%, var(--green-glow) 50%); opacity: 0; transition: opacity 0.3s; }
+  .project-card:hover { background: #0d1a0d; }
+  .project-card:hover::before { opacity: 1; }
+  .project-tag { display: inline-block; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--green); border: 1px solid var(--green-dim); padding: 0.2rem 0.5rem; margin-bottom: 1rem; }
+  .project-title { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 700; color: #fff; margin-bottom: 0.75rem; }
+  .project-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.7; margin-bottom: 1.5rem; }
+  .project-stack { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .pill { font-size: 0.65rem; padding: 0.2rem 0.6rem; background: rgba(57,255,20,0.05); border: 1px solid var(--border); color: var(--muted); }
+
+  /* CONTACT */
+  .contact-section { background: var(--bg2); border-top: 1px solid var(--border); }
+  .contact-inner { display: grid; grid-template-columns: 1fr auto; gap: 4rem; align-items: center; }
+  .contact-big { font-family: 'Syne', sans-serif; font-size: clamp(2.5rem, 5vw, 4.5rem); font-weight: 800; color: #fff; line-height: 1.1; }
+  .contact-big .accent { color: var(--green); }
+  .contact-links { display: flex; flex-direction: column; gap: 1rem; }
+  .contact-link { display: flex; align-items: center; gap: 1rem; text-decoration: none; color: var(--muted); font-size: 0.8rem; transition: all 0.2s; padding: 1rem 1.5rem; border: 1px solid var(--border); min-width: 220px; }
+  .contact-link:hover { color: var(--green); border-color: var(--green); }
+  .contact-link-label { font-size: 0.65rem; letter-spacing: 0.1em; color: var(--green); margin-bottom: 0.2rem; }
+
+  footer { border-top: 1px solid var(--border); padding: 2rem 4rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; color: var(--muted); max-width: 1200px; margin: 0 auto; }
+  .divider { width: 100%; height: 1px; background: linear-gradient(90deg, transparent, var(--green), transparent); opacity: 0.3; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  .glitch { position: relative; }
+  .glitch::before, .glitch::after { content: attr(data-text); position: absolute; top: 0; left: 0; font-family: inherit; font-size: inherit; font-weight: inherit; }
+  .glitch::before { color: rgba(0,229,255,0.4); animation: g1 4s infinite; clip-path: polygon(0 0,100% 0,100% 35%,0 35%); }
+  .glitch::after { color: rgba(255,184,0,0.3); animation: g2 4s infinite; clip-path: polygon(0 65%,100% 65%,100% 100%,0 100%); }
+  @keyframes g1 { 0%,90%,100%{transform:none} 92%{transform:translate(-3px,1px)} 94%{transform:translate(3px,-1px)} }
+  @keyframes g2 { 0%,90%,100%{transform:none} 91%{transform:translate(3px,-2px)} 93%{transform:translate(-3px,1px)} }
+
+  @media (max-width: 768px) {
+    .hero, .section { padding: 6rem 1.5rem 3rem; }
+    .about-grid, .contact-inner { grid-template-columns: 1fr; gap: 2rem; }
+    nav ul { display: none; }
+    footer { flex-direction: column; gap: 1rem; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">Pepe<span>.dev</span></div>
+  <ul>
+    <li><a href="#about">About</a></li>
+    <li><a href="#stack">Stack</a></li>
+    <li><a href="#projects">Proyectos</a></li>
+    <li><a href="#contact">Contacto</a></li>
+  </ul>
+  <div class="nav-status"><div class="dot"></div> Available for internships</div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <p class="hero-tag">DAM · IES Torre del Rey · Sevilla</p>
+    <h1 class="hero-name">
+      <span class="glitch" data-text="Pepe">Pepe</span><br>
+      <span class="accent">Dev</span>
+    </h1>
+    <p class="hero-subtitle">// Desarrollador de Aplicaciones Multiplataforma</p>
+    <div class="terminal-line">
+      <span class="terminal-prompt">$</span>
+      <span class="typed-text">whoami → estudiante · builder · problem-solver</span>
+    </div>
+    <div class="hero-cta">
+      <a href="#projects" class="btn">Ver proyectos</a>
+      <a href="#contact" class="btn btn-ghost">Contactar</a>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="section" id="about">
+  <div class="about-grid reveal">
+    <div class="about-text">
+      <p class="section-label">Sobre mí</p>
+      <h2 class="section-title">Código<br>con <span style="color:var(--green)">propósito</span></h2>
+      <p>Soy Pepe, estudiante de 2º de DAM con una cosa clara: prefiero aprender <strong>construyendo cosas reales</strong> antes que memorizando teoría.</p>
+      <p>Desde chatbots para ayuntamientos hasta apps Android con arquitectura MVVM, paso por varios stacks sin miedo. Si algo me llama la atención, lo aprendo y lo aplico.</p>
+      <p>Actualmente en prácticas desarrollando un <strong>chatbot IA municipal</strong> y explorando la integración de modelos locales con servicios reales.</p>
+    </div>
+    <div>
+      <div class="about-stats">
+        <div class="stat"><div class="stat-number">5+</div><div class="stat-label">Lenguajes</div></div>
+        <div class="stat"><div class="stat-number">2º</div><div class="stat-label">Año DAM</div></div>
+        <div class="stat"><div class="stat-number">∞</div><div class="stat-label">Proyectos en mente</div></div>
+        <div class="stat"><div class="stat-number">01</div><div class="stat-label">Objetivo: Trabajar</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- STACK -->
+<div class="stack-section">
+  <section class="section" id="stack">
+    <p class="section-label reveal">Tecnologías</p>
+    <h2 class="section-title reveal">Mi <span style="color:var(--green)">stack</span></h2>
+    <div class="tech-grid reveal">
+
+      <!-- Java -->
+      <div class="tech-card">
+        <div class="tech-icon">
+          <svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#EA2D2E" d="M47.617 98.12s-4.767 2.774 3.397 3.71c9.892 1.13 14.947.968 25.845-1.092 0 0 2.871 1.795 6.873 3.351-24.439 10.47-55.308-.607-36.115-5.969zm-2.988-13.665s-5.348 3.959 2.823 4.805c10.567 1.091 18.91 1.18 33.354-1.6 0 0 1.993 2.025 5.132 3.131-29.542 8.64-62.446.68-41.309-6.336z"/>
+            <path fill="#EA2D2E" d="M69.802 61.271c6.025 6.935-1.58 13.17-1.58 13.17s15.289-7.891 8.269-17.777c-6.559-9.215-11.587-13.792 15.635-29.58 0 0-42.731 10.67-22.324 34.187z"/>
+            <path fill="#EA2D2E" d="M102.123 108.229s3.529 2.91-3.888 5.159c-14.102 4.272-58.706 5.56-71.094.171-4.451-1.938 3.899-4.625 6.526-5.192 2.739-.593 4.303-.485 4.303-.485-4.953-3.487-32.013 6.85-13.743 9.815 49.821 8.076 90.817-3.637 77.896-9.468zM49.921 70.294s-22.686 5.389-8.033 7.348c6.188.828 18.518.638 30.011-.326 9.39-.789 18.813-2.474 18.813-2.474s-3.308 1.419-5.704 3.053c-23.042 6.061-67.544 3.238-54.731-2.958 10.832-5.239 19.644-4.643 19.644-4.643zm40.677 22.699c23.421-12.167 12.591-23.86 5.032-22.285-1.848.385-2.677.72-2.677.72s.688-1.079 2-1.543c14.953-5.255 26.451 15.503-4.823 23.725 0 .001.359-.327.468-.617z"/>
+            <path fill="#EA2D2E" d="M76.491 1.587s12.968 12.976-12.303 32.923c-20.266 16.006-4.621 25.13-.007 35.559-11.831-10.673-20.509-20.07-14.688-28.815C58.041 28.42 81.722 22.195 76.491 1.587z"/>
+            <path fill="#EA2D2E" d="M52.214 126.021c22.476 1.437 57-.8 57.817-11.436 0 0-1.571 4.032-18.577 7.231-19.186 3.612-42.854 3.191-56.887.874 0 .001 2.875 2.381 17.647 3.331z"/>
+          </svg>
+        </div>
+        <div class="tech-name">Java</div>
+        <div class="tech-level">Spring · JPA · Swing</div>
+      </div>
+
+      <!-- Kotlin -->
+      <div class="tech-card">
+        <div class="tech-icon">
+          <svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="kg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#7F52FF"/>
+                <stop offset="50%" stop-color="#C757BC"/>
+                <stop offset="100%" stop-color="#E44857"/>
+              </linearGradient>
+            </defs>
+            <path fill="url(#kg)" d="M0 128V0h128L64 64z"/>
+          </svg>
+        </div>
+        <div class="tech-name">Kotlin</div>
+        <div class="tech-level">Android · Jetpack Compose</div>
+      </div>
+
+      <!-- Python -->
+      <div class="tech-card">
+        <div class="tech-icon">
+          <svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="pya" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#5A9FD4"/>
+                <stop offset="100%" stop-color="#306998"/>
+              </linearGradient>
+              <linearGradient id="pyb" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#FFE873"/>
+                <stop offset="100%" stop-color="#FFD43B"/>
+              </linearGradient>
+            </defs>
+            <path fill="url(#pya)" d="M63.4 2c-4.2 0-8.3.4-11.8 1-10.5 1.8-12.3 5.7-12.3 12.8v9.4h24.7v3.1H30c-7.2 0-13.5 4.3-15.4 12.5-2.3 9.4-2.4 15.3 0 25.1 1.8 7.3 5.9 12.5 13.1 12.5h8.5V67.2c0-8.1 7-15.3 15.4-15.3h24.7c6.9 0 12.3-5.7 12.3-12.5V15.8c0-6.7-5.6-11.7-12.3-12.8C72 2.3 67.6 2 63.4 2zm-13.4 7.6c2.6 0 4.6 2.1 4.6 4.7s-2.1 4.7-4.6 4.7-4.6-2.1-4.6-4.7 2.1-4.7 4.6-4.7z"/>
+            <path fill="url(#pyb)" d="M91.7 28.4v11c0 8.5-7.2 15.7-15.4 15.7H51.6c-6.8 0-12.3 5.8-12.3 12.5v23.5c0 6.7 5.8 10.6 12.3 12.5 7.8 2.3 15.3 2.7 24.7 0 6.2-1.8 12.3-5.4 12.3-12.5v-9.4H63.9v-3.1H101c7.2 0 9.9-5 12.3-12.5 2.6-7.7 2.5-15.2 0-25.1-1.8-7.1-5.2-12.5-12.3-12.5h-9.3zm-13.9 59.5c2.6 0 4.6 2.1 4.6 4.7s-2.1 4.7-4.6 4.7-4.6-2.1-4.6-4.7 2.1-4.7 4.6-4.7z"/>
+          </svg>
+        </div>
+        <div class="tech-name">Python</div>
+        <div class="tech-level">SQLAlchemy · Textual</div>
+      </div>
+
+      <!-- Godot -->
+      <div class="tech-card">
+        <div class="tech-icon">
+          <svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#478CBF" d="M23 8C11 8 2 17.6 2 29.3v69.4C2 110.4 11 120 23 120h82c11.6 0 21-9.6 21-21.3V29.3C126 17.6 116.6 8 105 8H23z"/>
+            <circle fill="#fff" cx="64" cy="64" r="45" fill-opacity="0"/>
+            <path fill="none" stroke="#fff" stroke-width="8" d="M64 22a42 42 0 100 84 42 42 0 000-84z"/>
+            <circle fill="#fff" cx="64" cy="64" r="16"/>
+            <circle fill="#478CBF" cx="64" cy="64" r="9"/>
+            <line x1="38" y1="38" x2="52" y2="52" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+            <line x1="90" y1="38" x2="76" y2="52" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+            <line x1="38" y1="90" x2="52" y2="76" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+            <line x1="90" y1="90" x2="76" y2="76" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="tech-name">Godot</div>
+        <div class="tech-level">Game Development</div>
+      </div>
+
+      <!-- C# .NET -->
+      <div class="tech-card">
+        <div class="tech-icon">
+          <svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#9B4F96" d="M115.4 30.7L67.1 2.9c-1.8-1.1-4.4-1.1-6.2 0L13 30.7C11.2 31.7 10 33.8 10 35.5v55.7c0 1.7 1.2 3.8 3 4.8l47.9 27.8c1.8 1.1 4.4 1.1 6.2 0L115 96c1.8-1 3-3.1 3-4.8V35.5c0-1.7-1.2-3.8-2.6-4.8z"/>
+            <path fill="#68217A" d="M115.4 96c1.8-1 3-3.1 3-4.8V64L64 96z"/>
+            <path fill="#fff" d="M85.3 76.1C81.1 83.5 73.1 88.5 64 88.5c-13.5 0-24.5-11-24.5-24.5S50.5 39.5 64 39.5c9.1 0 17.1 5 21.3 12.5l13-7.5c-6.8-11.9-19.6-20-34.3-20-21.8 0-39.5 17.7-39.5 39.5S42.2 103.5 64 103.5c14.6 0 27.4-8 34.2-19.8l-12.9-7.6z"/>
+            <path fill="#fff" d="M97 66.2l.9-4.3h-4.2v-4.7h5.1l1.2-5.2h4.9l-1.2 5.2h3.8l1.2-5.2h4.8l-1.2 5.2H115v4.7h-3.3l-.9 4.3h4.2v4.7h-5.1l-1.2 5.2h-4.9l1.2-5.2h-3.8l-1.2 5.2h-4.8l1.2-5.2h-2.4v-4.7H97zm4.8 0h3.8l.9-4.3h-3.8l-.9 4.3z"/>
+          </svg>
+        </div>
+        <div class="tech-name">.NET MAUI</div>
+        <div class="tech-level">C# · Multiplataforma</div>
+      </div>
+
+      <!-- MySQL / DB -->
+      <div class="tech-card">
+        <div class="tech-icon">
+          <svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+            <ellipse fill="#00618A" cx="64" cy="30" rx="48" ry="18"/>
+            <path fill="none" stroke="#00618A" stroke-width="2" d="M16 30v68c0 9.9 21.5 18 48 18s48-8.1 48-18V30"/>
+            <ellipse fill="none" stroke="#fff" stroke-width="5" cx="64" cy="30" rx="48" ry="18"/>
+            <path fill="none" stroke="#fff" stroke-width="5" d="M16 30v22c0 9.9 21.5 18 48 18s48-8.1 48-18V30"/>
+            <path fill="none" stroke="#fff" stroke-width="5" d="M16 52v24c0 9.9 21.5 18 48 18s48-8.1 48-18V52"/>
+            <path fill="none" stroke="#fff" stroke-width="5" d="M16 76v22c0 9.9 21.5 18 48 18s48-8.1 48-18V76"/>
+            <path fill="#00618A" d="M16 30c0 9.9 21.5 18 48 18s48-8.1 48-18"/>
+            <ellipse fill="none" stroke="#E48E00" stroke-width="4" cx="64" cy="30" rx="48" ry="18"/>
+          </svg>
+        </div>
+        <div class="tech-name">Bases de Datos</div>
+        <div class="tech-level">MySQL · PostgreSQL · Room</div>
+      </div>
+
+      <!-- Android -->
+      <div class="tech-card">
+        <div class="tech-icon">
+          <svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#78C257" d="M44 16l-6-10c-.6-1-2-1.3-3-.6-1 .6-1.3 2-.6 3l6 10C35 22 29 29 29 37h70c0-8-6-15-12-19l6-10c.6-1 .3-2.4-.6-3-1-.6-2.4-.3-3 .6l-6 10A39 39 0 0064 14c-7 0-14 1-20 4zm6 14a3 3 0 110-6 3 3 0 010 6zm28 0a3 3 0 110-6 3 3 0 010 6z"/>
+            <rect fill="#78C257" x="10" y="41" width="12" height="44" rx="6"/>
+            <rect fill="#78C257" x="106" y="41" width="12" height="44" rx="6"/>
+            <rect fill="#78C257" x="29" y="41" width="70" height="64" rx="4"/>
+            <rect fill="#050a05" x="47" y="105" width="12" height="18" rx="6"/>
+            <rect fill="#050a05" x="69" y="105" width="12" height="18" rx="6"/>
+          </svg>
+        </div>
+        <div class="tech-name">Android</div>
+        <div class="tech-level">Room · Retrofit · Compose</div>
+      </div>
+
+      <!-- JavaScript -->
+      <div class="tech-card">
+        <div class="tech-icon">
+          <svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+            <rect fill="#F0DB4F" width="128" height="128" rx="4"/>
+            <path fill="#323330" d="M116.3 96.7c-.9-5.7-4.6-10.5-15.7-15-3.8-1.8-8.1-3-9.4-5.9-.5-1.7-.5-2.6-.2-3.7.8-3.3 4.8-4.3 7.9-3.4 2 .7 3.9 2.2 5.1 4.7 5.4-3.5 5.4-3.5 9.1-5.9-1.4-2.1-2.1-3.1-3-4.1-3.2-3.6-7.7-5.5-14.7-5.3l-3.7.5c-3.5.9-6.9 2.7-8.9 5.2-5.9 6.7-4.2 18.5 3 23.3 7.7 5.5 17.5 6.3 18 10.9.8 5.6-4.1 7.3-9.4 6.7-3.4-.6-5.5-2.2-7.7-5.6L78 105.7c1.2 2.7 2.3 3.7 4.2 5.3 5.9 4.8 13.2 5.9 20 4.8 7.4-1.3 14.1-6 15.8-13.7.5-2.1.6-3.5.3-5.4zm-44.2-38.6H60.7c0 12-.1 23.9-.1 35.9 0 7.6.4 14.6-.8 16.8-2.1 4.2-7.7 3.7-10.2 3-2.5-1-3.9-2.5-5.4-4.8l-1-1.7-9.8 6c1.6 3.2 3.9 6 6.9 7.7 4.5 2.7 10.5 3.3 16.2 2.1 4-.8 7.6-2.9 10-6.1 3.3-4.6 3.3-10.4 3.3-16.2V58.1z"/>
+          </svg>
+        </div>
+        <div class="tech-name">Web</div>
+        <div class="tech-level">HTML · CSS · JS</div>
+      </div>
+
+    </div>
+  </section>
+</div>
+
+<div class="divider"></div>
+
+<!-- PROJECTS -->
+<section class="section" id="projects">
+  <p class="section-label reveal">Proyectos</p>
+  <h2 class="section-title reveal">Lo que he<br><span style="color:var(--green)">construido</span></h2>
+  <div class="projects-grid reveal">
+    <div class="project-card">
+      <span class="project-tag">IA · Chatbot</span>
+      <h3 class="project-title">Chatbot Municipal IA</h3>
+      <p class="project-desc">Asistente virtual para el Ayuntamiento de Villamanrique de la Condesa. Integra modelos de lenguaje locales para responder consultas ciudadanas.</p>
+      <div class="project-stack">
+        <span class="pill">Python</span><span class="pill">LM Studio</span><span class="pill">API REST</span>
+      </div>
+    </div>
+    <div class="project-card">
+      <span class="project-tag">Android · A medida</span>
+      <h3 class="project-title">Churrería App</h3>
+      <p class="project-desc">Aplicación Android desarrollada a medida para empresa real. Gestión completa del negocio con arquitectura MVVM, Jetpack Compose y Room.</p>
+      <div class="project-stack">
+        <span class="pill">Kotlin</span><span class="pill">Room</span><span class="pill">Compose</span><span class="pill">MVVM</span>
+      </div>
+    </div>
+    <div class="project-card">
+      <span class="project-tag">Terminal · Python</span>
+      <h3 class="project-title">Gestión Churrería TUI</h3>
+      <p class="project-desc">Sistema de gestión con interfaz de terminal moderna implementado con SQLAlchemy y Textual para una experiencia TUI profesional.</p>
+      <div class="project-stack">
+        <span class="pill">Python</span><span class="pill">SQLAlchemy</span><span class="pill">Textual</span>
+      </div>
+    </div>
+    <div class="project-card">
+      <span class="project-tag">WhatsApp · Bot</span>
+      <h3 class="project-title">ClawdBot</h3>
+      <p class="project-desc">Integración de IA en WhatsApp usando OpenClaw y modelos locales de LM Studio. Sin depender de APIs externas de pago.</p>
+      <div class="project-stack">
+        <span class="pill">OpenClaw</span><span class="pill">LM Studio</span><span class="pill">Python</span>
+      </div>
+    </div>
+    <div class="project-card">
+      <span class="project-tag">Java · Enterprise</span>
+      <h3 class="project-title">E-commerce Spring Boot</h3>
+      <p class="project-desc">Aplicación de comercio electrónico con backend Spring Boot, JPA/Hibernate y generación de reportes con JasperReports.</p>
+      <div class="project-stack">
+        <span class="pill">Spring Boot</span><span class="pill">JPA</span><span class="pill">JasperReports</span>
+      </div>
+    </div>
+    <div class="project-card">
+      <span class="project-tag">.NET · Medical</span>
+      <h3 class="project-title">Medical Appointments</h3>
+      <p class="project-desc">Sistema de gestión de citas médicas multiplataforma con .NET MAUI, C# y base de datos MySQL.</p>
+      <div class="project-stack">
+        <span class="pill">.NET MAUI</span><span class="pill">C#</span><span class="pill">MySQL</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CONTACT -->
+<div class="contact-section">
+  <section class="section" id="contact">
+    <div class="contact-inner reveal">
+      <div>
+        <p class="section-label">Contacto</p>
+        <h2 class="contact-big">¿Hablamos?<br><span class="accent">Estoy<br>disponible.</span></h2>
+        <p style="color:var(--muted);font-size:0.8rem;margin-top:1.5rem;max-width:400px;line-height:1.7;">
+          Buscando prácticas, colaboraciones o simplemente conectar con otros devs. No muerdo.
+        </p>
+      </div>
+      <div class="contact-links">
+        <a href="mailto:tu@email.com" class="contact-link">
+          <span style="font-size:1.3rem">✉</span>
+          <div><div class="contact-link-label">EMAIL</div>tu@email.com</div>
+        </a>
+        <a href="https://github.com/" class="contact-link" target="_blank">
+          <span style="font-size:1.3rem">⌨</span>
+          <div><div class="contact-link-label">GITHUB</div>github.com/tuuser</div>
+        </a>
+        <a href="https://linkedin.com/" class="contact-link" target="_blank">
+          <span style="font-size:1.3rem">🔗</span>
+          <div><div class="contact-link-label">LINKEDIN</div>linkedin.com/in/tuuser</div>
+        </a>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <span>© 2026 Pepe · Hecho con café y Stack Overflow</span>
+  <span style="color:var(--green)">Disponible · Sevilla, España</span>
+</footer>
+
+<script>
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  const glitch = document.querySelector('.glitch');
+  document.addEventListener('mousemove', e => {
+    const x = (e.clientX / window.innerWidth - 0.5) * 6;
+    const y = (e.clientY / window.innerHeight - 0.5) * 3;
+    if (glitch) glitch.style.textShadow = `${x}px ${y}px 0 rgba(0,229,255,0.3),${-x}px ${-y}px 0 rgba(255,184,0,0.2)`;
+  });
+</script>
+</body>
+</html>

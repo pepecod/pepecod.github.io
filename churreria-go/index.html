@@ -1,1 +1,345 @@
 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Churrería Go · Caso de estudio · Pepe Dev</title>
+<meta name="description" content="Caso de estudio: app Android nativa (Kotlin + Jetpack Compose + Firebase) para pedidos a domicilio, con sincronización MySQL → Firebase, panel TUI en Python e impresión automática de tickets.">
+<meta property="og:title" content="La Churrería Go · Caso de estudio">
+<meta property="og:description" content="App Android de pedidos con impresión automática de tickets. Kotlin, Jetpack Compose, Firebase y Python.">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+
+<!--
+  ╔══════════════════════════════════════════════════════════════╗
+  ║  GUÍA DE CAPTURAS                                            ║
+  ║  Crea la carpeta  churreria-go/img/  y guarda ahí los        ║
+  ║  archivos con ESTOS nombres exactos (png, jpg o cambia la    ║
+  ║  extensión en el <img> correspondiente). Mientras el        ║
+  ║  archivo no exista, se ve el hueco; al subirlo, aparece      ║
+  ║  la imagen sola. No hay que tocar nada más.                  ║
+  ║                                                              ║
+  ║  Móvil (vertical, 1080×2400 aprox.):                         ║
+  ║   01-catalogo.png      04-carrito.png                        ║
+  ║   02-detalle.png       05-checkout.png                       ║
+  ║   03-mitad-mitad.png   06-confirmado.png                     ║
+  ║   07-local-cerrado.png 08-historial.png                      ║
+  ║  Escritorio (horizontal, 1600×1000 aprox.):                  ║
+  ║   09-tui.png           10-ticket.png                         ║
+  ║                                                              ║
+  ║  IMPORTANTE: usa SIEMPRE datos de prueba (nombres,           ║
+  ║  teléfonos, direcciones). Nada de datos reales de clientes.  ║
+  ╚══════════════════════════════════════════════════════════════╝
+-->
+
+<style>
+  :root {
+    --bg:#050a05; --bg2:#0a120a; --green:#39ff14; --green-dim:#1a7a00;
+    --green-glow:rgba(57,255,20,0.15); --text:#dff0df; --text2:#b8d4b8;
+    --muted:#6a8f6a; --border:#1e3e1e;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:15px;line-height:1.65;overflow-x:hidden}
+  body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:40px 40px;opacity:.25;pointer-events:none;z-index:0}
+  nav,section,footer,.band{position:relative;z-index:1}
+  a{color:var(--green)}
+
+  nav{position:fixed;top:0;left:0;right:0;padding:1rem 2.5rem;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);background:rgba(5,10,5,.92);backdrop-filter:blur(12px);z-index:100}
+  .nav-logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--green);text-decoration:none;text-shadow:0 0 18px rgba(57,255,20,.6)}
+  .nav-logo span{color:var(--text)}
+  nav ul{display:flex;gap:2rem;list-style:none}
+  nav ul a{color:var(--muted);text-decoration:none;font-size:.72rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;transition:color .2s}
+  nav ul a:hover{color:var(--green)}
+
+  .wrap{max-width:1100px;margin:0 auto;padding:6rem 4rem}
+  .band{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+  .label{font-size:.68rem;letter-spacing:.28em;text-transform:uppercase;color:var(--green);margin-bottom:.6rem;display:block}
+  .label::before{content:'// ';color:var(--muted)}
+  h2.title{font-family:'Syne',sans-serif;font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;color:#fff;margin-bottom:2rem;line-height:1.1}
+  h2.title em{font-style:normal;color:var(--green)}
+  p.lead{color:var(--text2);line-height:1.9;max-width:760px;margin-bottom:1.1rem}
+  p.lead strong{color:var(--text)}
+
+  /* HERO */
+  .hero{min-height:88vh;display:flex;align-items:center;max-width:1100px;margin:0 auto;padding:8rem 4rem 4rem}
+  .tag{font-size:.72rem;letter-spacing:.28em;text-transform:uppercase;color:var(--green);margin-bottom:1.5rem}
+  .tag::before{content:'> '}
+  .hero h1{font-family:'Syne',sans-serif;font-size:clamp(3rem,8vw,6rem);font-weight:800;line-height:.95;color:#fff;margin-bottom:1.25rem}
+  .hero h1 .accent{color:var(--green);text-shadow:0 0 40px rgba(57,255,20,.35)}
+  .hero .sub{color:var(--text2);font-size:1.05rem;margin-bottom:1rem}
+  .hero .desc{color:var(--text2);max-width:620px;line-height:1.85;margin-bottom:2rem}
+  .meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);max-width:860px;margin-bottom:2.2rem}
+  .meta div{background:var(--bg2);padding:1rem 1.25rem}
+  .meta b{display:block;font-size:.62rem;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:.2rem}
+  .meta span{font-size:.85rem;color:var(--text)}
+  .btns{display:flex;gap:1rem;flex-wrap:wrap}
+  .btn{padding:.8rem 1.6rem;font:600 .75rem 'JetBrains Mono',monospace;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;border:1px solid var(--green);color:var(--green);transition:all .2s}
+  .btn:hover{background:var(--green);color:var(--bg)}
+  .btn.ghost{border-color:var(--border);color:var(--muted)}
+  .btn.ghost:hover{border-color:var(--green);background:transparent;color:var(--green)}
+
+  /* BLOQUES */
+  .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1px;background:var(--border);border:1px solid var(--border)}
+  .cell{background:var(--bg2);padding:1.75rem}
+  .cell h3{font-family:'Syne',sans-serif;font-size:1.05rem;color:#fff;margin-bottom:.6rem}
+  .cell p,.cell li{font-size:.86rem;color:var(--text2);line-height:1.8}
+  .cell ul{padding-left:1.1rem}
+  .cell .n{font-family:'Syne',sans-serif;font-size:2.2rem;font-weight:800;color:var(--green);line-height:1;margin-bottom:.4rem;text-shadow:0 0 18px rgba(57,255,20,.25)}
+  .cell .k{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+
+  .pill{display:inline-block;font-size:.68rem;font-weight:500;padding:.22rem .65rem;margin:0 .35rem .4rem 0;background:rgba(57,255,20,.06);border:1px solid rgba(57,255,20,.2);color:var(--green)}
+  .stackrow{margin-bottom:1.25rem}
+  .stackrow b{display:block;font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem;font-weight:500}
+
+  /* CAPTURAS */
+  .shots{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:1.25rem;margin-top:1.5rem}
+  .shots.wide{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+  .shot{border:1px solid var(--border);background:var(--bg2);display:flex;flex-direction:column}
+  .shot img{display:block;width:100%;height:auto}
+  .shot .ph{aspect-ratio:9/19.5;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:.4rem;padding:1rem;border:1px dashed var(--green-dim);margin:.6rem;color:var(--muted);font-size:.75rem}
+  .shots.wide .ph{aspect-ratio:16/10}
+  .shot .ph b{color:var(--green);font-size:.7rem;letter-spacing:.18em;text-transform:uppercase}
+  .shot .ph small{font-size:.62rem;color:var(--muted)}
+  .shot:has(img) .ph{display:none}
+  .shot figcaption{padding:.7rem .9rem;font-size:.74rem;color:var(--text2);border-top:1px solid var(--border)}
+
+  .video{margin-top:1.5rem;aspect-ratio:16/9;max-width:820px;border:1px dashed var(--green-dim);background:var(--bg2);display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);font-size:.8rem;padding:1rem}
+  .video b{display:block;color:var(--green);letter-spacing:.18em;text-transform:uppercase;font-size:.7rem;margin-bottom:.3rem}
+
+  /* ARQUITECTURA */
+  .arch{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:.75rem;align-items:stretch;margin:1.5rem 0}
+  .node{border:1px solid var(--border);background:var(--bg2);padding:1.25rem}
+  .node h4{font-family:'Syne',sans-serif;color:#fff;font-size:.95rem;margin-bottom:.5rem}
+  .node.hl{border-color:var(--green-dim)}
+  .node li{font-size:.78rem;color:var(--text2);margin-left:1rem;line-height:1.7}
+  .link{display:flex;align-items:center;justify-content:center;color:var(--green);font-size:1.4rem}
+  .flow{counter-reset:s;list-style:none;margin-top:1rem}
+  .flow li{counter-increment:s;position:relative;padding:.55rem 0 .55rem 2.6rem;color:var(--text2);font-size:.88rem;border-bottom:1px solid var(--border)}
+  .flow li::before{content:counter(s);position:absolute;left:0;top:.5rem;width:1.7rem;height:1.7rem;border:1px solid var(--green);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:600}
+
+  /* TIMELINE */
+  .tl{border-left:1px solid var(--border);margin-left:.4rem}
+  .tl div{position:relative;padding:0 0 1.2rem 1.6rem}
+  .tl div::before{content:'';position:absolute;left:-5px;top:.45rem;width:9px;height:9px;background:var(--green);box-shadow:0 0 8px var(--green)}
+  .tl b{color:#fff;font-size:.86rem}
+  .tl span{display:block;color:var(--muted);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase}
+  .tl p{color:var(--text2);font-size:.84rem}
+
+  .note{border-left:2px solid var(--green);background:rgba(57,255,20,.04);padding:1rem 1.25rem;color:var(--text2);font-size:.86rem;max-width:760px;margin-top:1.5rem}
+  .note strong{color:var(--text)}
+
+  footer{border-top:1px solid var(--border);padding:1.75rem 4rem;display:flex;justify-content:space-between;align-items:center;font-size:.72rem;color:var(--muted);max-width:1100px;margin:0 auto}
+  footer a{text-decoration:none}
+
+  @media(max-width:900px){
+    nav{padding:1rem 1.25rem}nav ul{display:none}
+    .wrap,.hero{padding:6rem 1.5rem 3rem}
+    .arch{grid-template-columns:1fr}.link{transform:rotate(90deg)}
+    footer{flex-direction:column;gap:.75rem;text-align:center;padding:1.5rem}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="../">Pepe<span>.dev</span></a>
+  <ul>
+    <li><a href="#problema">Problema</a></li>
+    <li><a href="#app">La app</a></li>
+    <li><a href="#arquitectura">Arquitectura</a></li>
+    <li><a href="#decisiones">Decisiones</a></li>
+    <li><a href="#evolucion">Evolución</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+  <div>
+    <p class="tag">Caso de estudio · Android</p>
+    <h1>La Churrería <span class="accent">Go</span></h1>
+    <p class="sub">// Sistema de pedidos a domicilio con impresión automática de tickets</p>
+    <p class="desc">Una app Android nativa para que los clientes pidan desde el móvil, y un conjunto de herramientas en Python para que el negocio gestione el catálogo y reciba cada pedido impreso en el local, sin servidor propio y sin que el personal anote nada a mano.</p>
+
+    <div class="meta">
+      <div><b>Rol</b><span>Diseño y desarrollo completo</span></div>
+      <div><b>Periodo</b><span>Oct 2025 – May 2026</span></div>
+      <div><b>Estado</b><span>Entregado · v1.0 final</span></div>
+      <div><b>Plataformas</b><span>Android 8+ · Windows 10/11</span></div>
+    </div>
+
+    <div class="btns">
+      <a class="btn" href="#app">Ver la app</a>
+      <a class="btn ghost" href="../">← Portfolio</a>
+      <!-- Descomenta cuando tengas el enlace y quieras publicarlo:
+      <a class="btn ghost" href="https://github.com/pepecod/NOMBRE-DEL-REPO" target="_blank" rel="noopener">Repositorio</a>
+      <a class="btn ghost" href="URL-DEL-VIDEO" target="_blank" rel="noopener">Demo en vídeo</a>
+      -->
+    </div>
+  </div>
+</header>
+
+<!-- PROBLEMA -->
+<section class="wrap" id="problema">
+  <span class="label">Contexto</span>
+  <h2 class="title">El <em>problema</em></h2>
+  <p class="lead">En el negocio, los pedidos por teléfono y presenciales se anotaban a mano. Eso generaba <strong>retrasos, errores en las anotaciones y dificultad para organizar el reparto a domicilio</strong>.</p>
+  <p class="lead">Había además una restricción real: <strong>no era posible mantener un servidor propio accesible desde internet</strong>. Eso condicionó toda la arquitectura, y es la parte del proyecto de la que más he aprendido.</p>
+
+  <div class="cols" style="margin-top:2rem">
+    <div class="cell"><div class="n">14</div><div class="k">Requisitos funcionales, todos implementados</div></div>
+    <div class="cell"><div class="n">5</div><div class="k">Casos de uso cubiertos</div></div>
+    <div class="cell"><div class="n">8</div><div class="k">Decisiones de arquitectura documentadas (ADR)</div></div>
+    <div class="cell"><div class="n">≤ 5</div><div class="k">Pantallas desde el catálogo hasta la confirmación</div></div>
+  </div>
+</section>
+
+<!-- LA APP -->
+<div class="band">
+<section class="wrap" id="app">
+  <span class="label">Producto</span>
+  <h2 class="title">La <em>app</em> Android</h2>
+  <p class="lead">Kotlin y Jetpack Compose con Material Design 3, arquitectura MVVM y datos en tiempo real desde Firebase. El cliente entra con su cuenta de Google, elige, personaliza y confirma. Lo que más trabajo llevó:</p>
+
+  <div class="cols">
+    <div class="cell"><h3>Personalización real</h3><p>Quitar ingredientes, añadir extras, elegir tamaño, y pizzas “mitad y mitad” con personalización independiente de cada mitad.</p></div>
+    <div class="cell"><h3>Entrega a domicilio</h3><p>Dirección con GPS, validación por código postal y coste de envío calculado por distancia al local (geocodificación).</p></div>
+    <div class="cell"><h3>Estado del local en vivo</h3><p>Si el negocio cierra desde su panel, la app muestra un aviso y bloquea el carrito al instante.</p></div>
+    <div class="cell"><h3>Historial en la nube</h3><p>Los pedidos se consultan desde Firebase, así que el historial aparece en cualquier móvil con la misma cuenta.</p></div>
+  </div>
+
+  <div class="shots">
+    <figure class="shot"><div class="ph"><b>Captura 1</b>Catálogo<small>img/01-catalogo.png</small></div><img src="img/01-catalogo.png" alt="Catálogo de productos en cuadrícula con filtros por categoría" loading="lazy"><figcaption>Catálogo con filtros y buscador</figcaption></figure>
+    <figure class="shot"><div class="ph"><b>Captura 2</b>Detalle y personalización<small>img/02-detalle.png</small></div><img src="img/02-detalle.png" alt="Pantalla de detalle de producto con ingredientes y extras" loading="lazy"><figcaption>Ingredientes, extras y tamaño</figcaption></figure>
+    <figure class="shot"><div class="ph"><b>Captura 3</b>Pizza mitad y mitad<small>img/03-mitad-mitad.png</small></div><img src="img/03-mitad-mitad.png" alt="Personalización independiente de cada mitad de una pizza" loading="lazy"><figcaption>Cada mitad, personalizada por separado</figcaption></figure>
+    <figure class="shot"><div class="ph"><b>Captura 4</b>Carrito<small>img/04-carrito.png</small></div><img src="img/04-carrito.png" alt="Carrito con resumen y edición de cantidades" loading="lazy"><figcaption>Carrito editable</figcaption></figure>
+    <figure class="shot"><div class="ph"><b>Captura 5</b>Checkout<small>img/05-checkout.png</small></div><img src="img/05-checkout.png" alt="Checkout con dirección, coste de envío y método de pago" loading="lazy"><figcaption>Dirección, envío y pago</figcaption></figure>
+    <figure class="shot"><div class="ph"><b>Captura 6</b>Pedido confirmado<small>img/06-confirmado.png</small></div><img src="img/06-confirmado.png" alt="Pantalla de pedido confirmado" loading="lazy"><figcaption>Confirmación inmediata</figcaption></figure>
+    <figure class="shot"><div class="ph"><b>Captura 7</b>Local cerrado<small>img/07-local-cerrado.png</small></div><img src="img/07-local-cerrado.png" alt="Aviso rojo de local cerrado con el carrito bloqueado" loading="lazy"><figcaption>Local cerrado: aviso y carrito bloqueado</figcaption></figure>
+    <figure class="shot"><div class="ph"><b>Captura 8</b>Historial<small>img/08-historial.png</small></div><img src="img/08-historial.png" alt="Perfil de usuario con historial de pedidos" loading="lazy"><figcaption>Perfil e historial de pedidos</figcaption></figure>
+  </div>
+
+  <!-- DEMO EN VÍDEO: cuando tengas el vídeo, sustituye el bloque .video por uno de estos:
+       <video controls preload="metadata" style="max-width:820px;width:100%" src="img/demo.mp4"></video>
+       o un iframe de YouTube (vídeo "no listado"). -->
+  <div class="video"><div><b>Demo · vídeo de 30–60 s</b>Un pedido completo: catálogo → personalizar → checkout → ticket saliendo de la impresora.</div></div>
+</section>
+</div>
+
+<!-- ARQUITECTURA -->
+<section class="wrap" id="arquitectura">
+  <span class="label">Ingeniería</span>
+  <h2 class="title">Arqui<em>tectura</em></h2>
+  <p class="lead">Sin servidor propio, el sistema es <strong>serverless con un nodo local</strong>: Firebase hace de backend en la nube y el PC del negocio conserva el catálogo y la impresión.</p>
+
+  <div class="arch">
+    <div class="node">
+      <h4>App Android</h4>
+      <ul><li>Kotlin + Jetpack Compose</li><li>MVVM · StateFlow</li><li>Room (caché local)</li><li>Coil (imágenes)</li></ul>
+    </div>
+    <div class="link">⇄</div>
+    <div class="node hl">
+      <h4>Firebase</h4>
+      <ul><li>Firestore (catálogo, pedidos, estado)</li><li>Authentication (Google)</li><li>Security Rules por usuario</li></ul>
+    </div>
+    <div class="link">⇄</div>
+    <div class="node">
+      <h4>PC del negocio</h4>
+      <ul><li>MySQL local (catálogo)</li><li>TUI de gestión (Textual)</li><li>order_listener (impresión)</li><li>Script de sincronización</li></ul>
+    </div>
+  </div>
+
+  <h3 style="font-family:'Syne',sans-serif;color:#fff;margin:2rem 0 .5rem">Qué pasa cuando alguien pide</h3>
+  <ol class="flow">
+    <li>El cliente confirma el pedido; la app genera un número legible (<code>PED_ddMMyyyy_HHmm</code>) y lo guarda en Firestore.</li>
+    <li>El <em>listener</em> del PC del negocio detecta el pedido nuevo en tiempo real.</li>
+    <li>Genera el ticket en PDF, avisa con una notificación de Windows y lo pone en una cola segura entre hilos.</li>
+    <li>Imprime tres copias en la impresora térmica; si falla, guarda el PDF como respaldo.</li>
+    <li>Marca el pedido como confirmado en Firebase.</li>
+  </ol>
+
+  <div class="shots wide">
+    <figure class="shot"><div class="ph"><b>Captura 9</b>Panel TUI (Python + Textual)<small>img/09-tui.png</small></div><img src="img/09-tui.png" alt="Panel de gestión en terminal con menú de productos, sincronización y estado del local" loading="lazy"><figcaption>Panel de gestión para el personal</figcaption></figure>
+    <figure class="shot"><div class="ph"><b>Captura 10</b>Ticket impreso<small>img/10-ticket.png</small></div><img src="img/10-ticket.png" alt="Ticket de pedido impreso con productos, extras e ingredientes removidos" loading="lazy"><figcaption>Ticket con extras e ingredientes removidos</figcaption></figure>
+  </div>
+</section>
+
+<!-- DECISIONES -->
+<div class="band">
+<section class="wrap" id="decisiones">
+  <span class="label">Criterio</span>
+  <h2 class="title">Decisiones <em>técnicas</em></h2>
+  <div class="cols">
+    <div class="cell"><h3>Firebase como backend</h3><p><strong>Por qué:</strong> no se podía mantener un servidor público. <strong>Coste:</strong> dependencia de Google, a cambio de mantenimiento mínimo y escalado automático.</p></div>
+    <div class="cell"><h3>Sincronización MySQL → Firebase</h3><p>El negocio ya gestionaba su catálogo con herramientas que conoce, así que el dato maestro sigue en MySQL local y un script lo publica bajo demanda. Sincronización manual, pero controlada y comprensible.</p></div>
+    <div class="cell"><h3>Impresión desde un script en Python</h3><p>Control total del proceso y centralizado en el PC del local. Descarté imprimir desde la app o usar impresoras en la nube. El PDF sirve de respaldo.</p></div>
+    <div class="cell"><h3>TUI en vez de panel web</h3><p>Sin servidor web, sin coste y con acceso directo a MySQL y Firebase en local. Le salió más a cuenta al negocio que mantener otro servicio.</p></div>
+    <div class="cell"><h3>Historial en Firebase, no en Room</h3><p>La primera versión guardaba el historial en local y se perdía al cambiar de móvil. Lo migré a Firestore con un índice compuesto (usuario + fecha).</p></div>
+    <div class="cell"><h3>Número de pedido generado en la app</h3><p>Antes lo creaba el listener y el ticket mostraba el ID aleatorio de Firestore. Generarlo en la app da un número legible para el personal.</p></div>
+  </div>
+</section>
+</div>
+
+<!-- STACK -->
+<section class="wrap" id="stack">
+  <span class="label">Tecnologías</span>
+  <h2 class="title">Stack <em>usado</em></h2>
+  <div class="stackrow"><b>App Android</b>
+    <span class="pill">Kotlin</span><span class="pill">Jetpack Compose</span><span class="pill">Material Design 3</span><span class="pill">MVVM</span><span class="pill">StateFlow</span><span class="pill">Room</span><span class="pill">Coil</span><span class="pill">Firebase Auth</span><span class="pill">Firestore</span>
+  </div>
+  <div class="stackrow"><b>Herramientas del negocio</b>
+    <span class="pill">Python</span><span class="pill">Textual</span><span class="pill">MySQL</span><span class="pill">Firebase Admin SDK</span><span class="pill">ReportLab</span><span class="pill">SumatraPDF</span><span class="pill">winotify</span>
+  </div>
+  <div class="stackrow"><b>Patrones</b>
+    <span class="pill">Repository</span><span class="pill">Observer (Flow)</span><span class="pill">Cola thread-safe</span><span class="pill">ADRs</span>
+  </div>
+</section>
+
+<!-- EVOLUCIÓN -->
+<div class="band">
+<section class="wrap" id="evolucion">
+  <span class="label">Proceso</span>
+  <h2 class="title">Cómo <em>evolucionó</em></h2>
+  <div class="tl">
+    <div><span>Oct 2025 · v1.0</span><b>Backend propio con Node.js</b><p>Primer planteamiento, que no era viable sin servidor público.</p></div>
+    <div><span>Nov 2025 · v1.1</span><b>Giro a serverless</b><p>Node.js sustituido por Firebase Firestore.</p></div>
+    <div><span>Dic 2025 · v1.2</span><b>Arquitectura híbrida</b><p>Script de sincronización MySQL → Firebase.</p></div>
+    <div><span>Ene 2026 · v1.3</span><b>Gestión desde el PC del local</b><p>Fuera el panel de administración de la app; entra el TUI en Python.</p></div>
+    <div><span>Mar 2026 · v1.5 – v1.6</span><b>Historial en la nube y pizzas personalizadas</b><p>Historial migrado a Firebase y pizza mitad y mitad.</p></div>
+    <div><span>Abr 2026 · v1.7</span><b>Estado del local en tiempo real</b><p>Abierto/cerrado desde el TUI, visible al instante en la app.</p></div>
+    <div><span>May 2026 · v1.9 – v1.0 final</span><b>Rediseño y entrega</b><p>Tema Material 3 completo, documentación y manual de usuario.</p></div>
+  </div>
+</section>
+</div>
+
+<!-- PRUEBAS -->
+<section class="wrap" id="pruebas">
+  <span class="label">Calidad</span>
+  <h2 class="title">Pruebas y <em>pendientes</em></h2>
+  <div class="cols">
+    <div class="cell"><h3>Lo que probé</h3><ul>
+      <li>Flujo completo: del pedido en la app al ticket impreso en el PC.</li>
+      <li>Validación de código postal, dentro y fuera de zona.</li>
+      <li>Cambio de estado del local desde el TUI reflejado en la app.</li>
+      <li>Historial desde varios móviles con la misma cuenta.</li>
+      <li>Sincronización del catálogo con imágenes.</li>
+    </ul></div>
+    <div class="cell"><h3>Un fallo que encontré</h3><p>Las Security Rules de Firestore denegaban el acceso a las categorías porque no tenían regla propia: la app cargaba sin ellas. Lo detecté probando, añadí la regla y dejé el catálogo como lectura pública y los pedidos limitados a su propietario.</p></div>
+    <div class="cell"><h3>Pendiente (v1.1)</h3><ul>
+      <li>Errores de red visibles al usuario.</li>
+      <li>Edición de ingredientes desde el TUI.</li>
+      <li>Términos y política de privacidad (RGPD).</li>
+      <li>Notificaciones push al confirmar el pedido.</li>
+    </ul></div>
+  </div>
+
+  <div class="note"><strong>Estado real del proyecto:</strong> está terminado y entregado, pero a día de hoy el negocio no lo ha puesto en marcha, así que no tengo métricas de uso real. Lo que sí puedo enseñar es el sistema completo funcionando de extremo a extremo.</div>
+</section>
+
+<footer>
+  <span>© 2026 José Manuel Carmona · Sevilla, España</span>
+  <a href="../">← Volver al portfolio</a>
+</footer>
+
+</body>
+</html>
